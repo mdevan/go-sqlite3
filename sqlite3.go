@@ -6,21 +6,32 @@
 package sqlite3
 
 /*
-#cgo CFLAGS: -std=gnu99
+#cgo CFLAGS: -I.
+// code generation
+#cgo CFLAGS: -Wall -O2 -std=c99 -msse4.2 -march=corei7 -mtune=corei7
+// platform configuration
+#cgo CFLAGS: -DHAVE_FDATASYNC
+#cgo CFLAGS: -DHAVE_GMTIME_R
+#cgo CFLAGS: -DHAVE_ISNAN
+#cgo CFLAGS: -DHAVE_LOCALTIME_R
+#cgo CFLAGS: -DHAVE_STRCHRNUL
+#cgo CFLAGS: -DHAVE_USLEEP
+#cgo CFLAGS: -DHAVE_UTIME
+// feature configuration
+#cgo CFLAGS: -DSQLITE_DEFAULT_AUTOMATIC_INDEX=0
+#cgo CFLAGS: -DSQLITE_DEFAULT_PAGE_SIZE=4096
+#cgo CFLAGS: -DSQLITE_THREADSAFE=1
+#cgo CFLAGS: -DSQLITE_ENABLE_STAT4
+#cgo CFLAGS: -DSQLITE_DISABLE_DIRSYNC
+// linker
+#cgo linux LDFLAGS: -ldl
+
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 
 #ifdef __CYGWIN__
 # include <errno.h>
-#endif
-
-#ifndef SQLITE_OPEN_READWRITE
-# define SQLITE_OPEN_READWRITE 0
-#endif
-
-#ifndef SQLITE_OPEN_FULLMUTEX
-# define SQLITE_OPEN_FULLMUTEX 0
 #endif
 
 static int
