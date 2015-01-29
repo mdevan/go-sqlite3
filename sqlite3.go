@@ -14,7 +14,6 @@ package sqlite3
 #cgo CFLAGS: -DHAVE_GMTIME_R
 #cgo CFLAGS: -DHAVE_ISNAN
 #cgo CFLAGS: -DHAVE_LOCALTIME_R
-#cgo CFLAGS: -DHAVE_STRCHRNUL
 #cgo CFLAGS: -DHAVE_USLEEP
 #cgo CFLAGS: -DHAVE_UTIME
 // feature configuration
