@@ -28,6 +28,7 @@ package sqlite3
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 
 #ifdef __CYGWIN__
 # include <errno.h>
@@ -63,6 +64,34 @@ _sqlite3_last_insert_rowid(sqlite3* db) {
 static long
 _sqlite3_changes(sqlite3* db) {
   return (long) sqlite3_changes(db);
+}
+
+static void
+regex_func(sqlite3_context * ctx, int argc, sqlite3_value ** argv)
+{
+	const char * expr = (const char *)sqlite3_value_text(argv[0]);
+	const char * val  = (const char *)sqlite3_value_text(argv[1]);
+
+	// TODO: cache the compiled regex at connection scope
+
+	regex_t preg;
+	int rc = regcomp(&preg, expr, REG_EXTENDED|REG_ICASE|REG_NOSUB);
+	if (rc != 0) {
+		char tmp[1024] = {0};
+		regerror(rc, &preg, tmp, sizeof(tmp));
+		sqlite3_result_error(ctx, tmp, -1);
+	} else {
+		int result = (regexec(&preg, val, 0, 0, 0) == 0);
+		regfree(&preg);
+		sqlite3_result_int64(ctx, result);
+	}
+}
+
+static int
+register_regex_func(sqlite3 * db)
+{
+	return sqlite3_create_function(db, "regexp", 2,
+		SQLITE_UTF8|SQLITE_DETERMINISTIC, 0, regex_func, 0, 0);
 }
 
 */
@@ -290,6 +319,11 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	}
 
 	conn := &SQLiteConn{db}
+
+	rv = C.register_regex_func(db)
+	if rv != C.SQLITE_OK {
+		return nil, errors.New(C.GoString(C.sqlite3_errmsg(db)))
+	}
 
 	if len(d.Extensions) > 0 {
 		rv = C.sqlite3_enable_load_extension(db, 1)
