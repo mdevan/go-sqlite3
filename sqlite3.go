@@ -2,6 +2,8 @@
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
+// ---
+// Further opinionated, backward-incompatible changes by Mahadevan.
 
 package sqlite3
 
@@ -139,8 +141,6 @@ func Version() (libVersion string, libVersionNumber int, sourceId string) {
 
 // Driver struct.
 type SQLiteDriver struct {
-	Extensions  []string
-	ConnectHook func(*SQLiteConn) error
 }
 
 // Conn struct.
@@ -326,38 +326,6 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 		return nil, errors.New(C.GoString(C.sqlite3_errmsg(db)))
 	}
 
-	if len(d.Extensions) > 0 {
-		rv = C.sqlite3_enable_load_extension(db, 1)
-		if rv != C.SQLITE_OK {
-			return nil, errors.New(C.GoString(C.sqlite3_errmsg(db)))
-		}
-
-		stmt, err := conn.Prepare("SELECT load_extension(?);")
-		if err != nil {
-			return nil, err
-		}
-
-		for _, extension := range d.Extensions {
-			if _, err = stmt.Exec([]driver.Value{extension}); err != nil {
-				return nil, err
-			}
-		}
-
-		if err = stmt.Close(); err != nil {
-			return nil, err
-		}
-
-		rv = C.sqlite3_enable_load_extension(db, 0)
-		if rv != C.SQLITE_OK {
-			return nil, errors.New(C.GoString(C.sqlite3_errmsg(db)))
-		}
-	}
-
-	if d.ConnectHook != nil {
-		if err := d.ConnectHook(conn); err != nil {
-			return nil, err
-		}
-	}
 	runtime.SetFinalizer(conn, (*SQLiteConn).Close)
 	return conn, nil
 }
