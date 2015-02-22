@@ -8,7 +8,8 @@ package sqlite3
 /*
 #cgo CFLAGS: -I.
 // code generation
-#cgo CFLAGS: -Wall -O2 -std=c99 -msse4.2 -march=corei7 -mtune=corei7
+#cgo CFLAGS: -Wall -O2 -std=c99
+#cgo amd64 CFLAGS: -msse4.2 -march=corei7 -mtune=corei7
 // platform configuration
 #cgo CFLAGS: -DHAVE_FDATASYNC
 #cgo CFLAGS: -DHAVE_GMTIME_R
