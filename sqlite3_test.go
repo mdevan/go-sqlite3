@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mattn/go-sqlite3/sqlite3_test"
+	"github.com/mdevan/go-sqlite3/sqlite3_test"
 )
 
 func TempFilename() string {
